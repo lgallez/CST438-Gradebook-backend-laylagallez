@@ -109,7 +109,7 @@ public class AssignmentController {
 			if(assignment.getNeedsGrading() == 0) {
 				assignmentRepository.delete(assignment);
 			} else {
-				throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Error, assignments with existing grades");
+				throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Error, assignments with existing grades");
 			}	
 		}
 	}
