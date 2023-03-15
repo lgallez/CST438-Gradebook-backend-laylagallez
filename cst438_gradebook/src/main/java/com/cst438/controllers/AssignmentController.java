@@ -62,8 +62,7 @@ public class AssignmentController {
 			assignment.setDueDate(dueDate);
 			assignment.setCourse(courseID);
 			assignmentRepository.save(assignment);
-			}
-			else {
+			} else {
 				throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Not Authorized. " );
 			}
 		
@@ -86,13 +85,11 @@ public class AssignmentController {
 				assignment.setName(name);
 				assignmentRepository.save(assignment);
 				return ResponseEntity.noContent().build();
-			}
-			else {
+			} else {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
 			}
 			
-		}
-		else {
+		} else {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authorized");
 		}
 	}
