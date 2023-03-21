@@ -44,8 +44,8 @@ public class Assignment {
 	public Date getDueDate() {
 		return dueDate;
 	}
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
+	public void setDueDate(Date date) {
+		this.dueDate = date;
 	}
 	public int getNeedsGrading() {
 		return needsGrading;
@@ -62,7 +62,7 @@ public class Assignment {
 	}
 	@Override
 	public String toString() {
-		return "Assignment [id=" + id + ", course_id=" + course.getCourse_id() + ", name=" + name + ", dueDate=" + dueDate
+		return "Assignment [id=" + id + ", course_id=" + course + ", name=" + name + ", dueDate=" + dueDate
 				+ ", needsGrading=" + needsGrading + "]";
 	}
 	

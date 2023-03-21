@@ -1,31 +1,24 @@
 package com.cst438.controllers;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
-import com.cst438.domain.AssignmentGrade;
-import com.cst438.domain.AssignmentListDTO;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.domain.Course;
-import com.cst438.domain.GradebookDTO;
+import com.cst438.domain.CourseRepository;
 
 @RestController
 @CrossOrigin(origins = {"http://localhost:3000","http://localhost:3001"})
@@ -33,70 +26,46 @@ public class AssignmentController {
 	
 	@Autowired
 	AssignmentRepository assignmentRepository;
-
-	@GetMapping("/assignments")
-	public AssignmentListDTO getAssignmentsNeedGrading( ) {
-		
-		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
-		
-		List<Assignment> assignments = assignmentRepository.findNeedGradingByEmail(email);
-		AssignmentListDTO result = new AssignmentListDTO();
-		for (Assignment a: assignments) {
-			result.assignments.add(new AssignmentListDTO.AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), a.getDueDate().toString() , a.getCourse().getTitle()));
-		}
-		return result;
-	}
 	
-	@PostMapping("/assignments")
+	@Autowired
+	CourseRepository courseRepository;
+	
+	@PostMapping("/assignments/new")
 	@Transactional
-	public void createAssignment (@RequestParam String name, @RequestParam Date dueDate, @RequestParam Course courseID) {
+	public void createAssignment(@RequestParam("id") int courseId, @RequestParam("name") String name, @RequestParam("due") String date) {
+		Course course = courseRepository.findById(courseId).orElse(null);
 		
-		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
-		
-		if(email == "dwisneski@csumb.edu") {
-			//Create new assignment object
+		if(course != null) {
 			Assignment assignment = new Assignment();
-
-			//Set information, name, due date, courseID
+			assignment.setDueDate(Date.valueOf(date));
 			assignment.setName(name);
-			assignment.setDueDate(dueDate);
-			assignment.setCourse(courseID);
+			assignment.setNeedsGrading(1);
+			assignment.setCourse(course);
 			assignmentRepository.save(assignment);
-			} else {
-				throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Not Authorized. " );
-			}
+		}
+		else {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment cannot be created for this course. " + courseId);
+		}
 		
 	}
 	
-	@PutMapping("/assignments/{assignmentId}")
+	@PutMapping("/assignments/update/{assignmentId}")
 	@Transactional
-	public ResponseEntity<Void> updateAssignmentName (@PathVariable int assignmentId, @RequestParam String name) {
-			
-		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
-			
-		if(email.equals("dwisneski@csumb.edu")) {
-			
-			// get assignment 
-			Optional<Assignment> assignmentOpt = assignmentRepository.findById(assignmentId);
-				
-			if(assignmentOpt.isPresent()) {
-				Assignment assignment = assignmentOpt.get();
-				//Update assignment name and save record
-				assignment.setName(name);
-				assignmentRepository.save(assignment);
-				return ResponseEntity.noContent().build();
-			} else {
-				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
-			}
-			
-		} else {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authorized");
+	public void updateAssignmentName(@RequestParam("id") Integer assignmentId, @RequestParam("name") String name) {
+		Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null); 
+		if(assignment !=null) {
+			assignment.setName(name);
+			assignmentRepository.save(assignment);
 		}
+		else {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Cannot Update Assignemnt" + assignmentId);
+		}
+		
 	}
 	
 	
 
-	@DeleteMapping("/assignment/{assignmentId}")
+	@DeleteMapping("/assignment/delete/{assignmentId}")
     @Transactional
     public void deleteAssignment(@PathVariable int assignmentId) {
 		
